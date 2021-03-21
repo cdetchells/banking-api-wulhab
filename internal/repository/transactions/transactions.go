@@ -25,8 +25,6 @@ func (r *repository) GetAccountTransactions(id int) ([]*model.Transaction, error
 	transactions, _ := getTransactions()
 	var accountTrans []*model.Transaction
 	for _, transaction := range transactions {
-		fmt.Println(id)
-		fmt.Println(transaction.FromAccount)
 		if transaction.FromAccount == id || transaction.ToAccount == id {
 			accountTrans = append(accountTrans, transaction)
 		}

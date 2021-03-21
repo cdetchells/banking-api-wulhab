@@ -51,7 +51,6 @@ func (r *repository) CreateCustomerAccount(newAccount *model.NewAccount) (*model
 			maxAccountId = account.ID
 		}
 	}
-	fmt.Println(newAccount.Customer)
 	return &model.Account{
 		ID:       maxAccountId,
 		Customer: newAccount.Customer,
