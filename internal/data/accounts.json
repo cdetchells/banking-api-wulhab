@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "customer": 1,
+    "type": 1,
+    "name": "Transaction Account"
+  },
+  {
+    "id": 2,
+    "customer": 1,
+    "type": 2,
+    "name": "Savings Account"
+  },
+  {
+    "id": 3,
+    "customer": 1,
+    "type": 2,
+    "name": "Deposit Account"
+  },
+  {
+    "id": 4,
+    "customer": 2,
+    "type": 1,
+    "name": "Transaction Account"
+  },
+  {
+    "id": 5,
+    "customer": 2,
+    "type": 2,
+    "name": "Savings Account"
+  },
+  {
+    "id": 6,
+    "customer": 3,
+    "type": 1,
+    "name": "Transaction Account"
+  },
+  {
+    "id": 7,
+    "customer": 3,
+    "type": 2,
+    "name": "Savings Account"
+  },
+  {
+    "id": 8,
+    "customer": 3,
+    "type": 2,
+    "name": "Deposit Account"
+  },
+  {
+    "id": 9,
+    "customer": 4,
+    "type": 1,
+    "name": "Transaction Account"
+  },
+  {
+    "id": 10,
+    "customer": 4,
+    "type": 1,
+    "name": "Joint Account"
+  },
+  {
+    "id": 11,
+    "customer": 4,
+    "type": 2,
+    "name": "Savings Account"
+  },
+  {
+    "id": 12,
+    "customer": 4,
+    "type": 2,
+    "name": "Deposit Account"
+  }
+]
