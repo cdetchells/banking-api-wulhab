@@ -16,14 +16,25 @@ func GetRoutes() []*route {
 	return []*route{
 		{
 			pattern: "/customer/{id:[1-9]+}",
-			handler: customer,
+			handler: getCustomer,
+			method:  "GET",
+		},
+		{
+			pattern: "/customer/{id:[1-9]+}/accounts",
+			handler: getCustomerAccounts,
 			method:  "GET",
 		},
 	}
 }
 
-func customer(w http.ResponseWriter, r *http.Request) {
+func getCustomer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	name := params["name"]
-	w.Write([]byte("Hello " + name))
+	id := params["id"]
+	w.Write([]byte("Hello " + id))
+}
+
+func getCustomerAccounts(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := params["id"]
+	w.Write([]byte("Hello " + id))
 }
