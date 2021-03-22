@@ -1,0 +1,6 @@
+# Coverage files
+coverage.out
+coverage.html
+
+# Mocks
+mock_*
