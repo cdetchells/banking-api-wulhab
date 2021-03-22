@@ -93,3 +93,5 @@ func (r *repository) CreateAccountTransaction(customerId int, fromAccountId int,
 		Amount:      newTransaction.Amount,
 	}, nil
 }
+
+//go:generate mockgen -source=transactions.go -package=transactions -destination=./mocks/mock_transactions.go -package=mocks

@@ -79,3 +79,5 @@ func (r *repository) GetAccount(id int) (*model.Account, error) {
 	}
 	return nil, nil
 }
+
+//go:generate mockgen -source=accounts.go -package=accounts -destination=./mocks/mock_accounts.go -package=mocks

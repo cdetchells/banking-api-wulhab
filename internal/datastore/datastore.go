@@ -68,3 +68,5 @@ func (d *datastore) GetTransactions() ([]*model.Transaction, error) {
 	}
 	return data, nil
 }
+
+//go:generate mockgen -source=datastore.go -package=datastore -destination=./mocks/mock_datastore.go -package=mocks
