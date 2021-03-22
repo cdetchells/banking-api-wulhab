@@ -19,7 +19,7 @@ func (rtr *router) GetCustomerAccounts(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Account Id"))
 		return
 	}
-	data, _ := rtr.accounts.GetCustomerAccounts(id)
+	data, err := rtr.accounts.GetCustomerAccounts(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

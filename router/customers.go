@@ -32,7 +32,11 @@ func (rtr *router) GetCustomer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rtr *router) GetCustomers(w http.ResponseWriter, r *http.Request) {
-	customer, _ := rtr.customers.GetCustomers()
+	customer, err := rtr.customers.GetCustomers()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	c, _ := json.Marshal(customer)
 	w.Write(c)
 }
