@@ -1,39 +1,84 @@
 package transactions
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
+	"errors"
 
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/datastore"
 	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/model"
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/accounts"
 )
 
 type Repository interface {
-	GetAccountTransactions(id int) ([]*model.Transaction, error)
-	CreateAccountTransaction(newTransaction *model.NewTransaction) (*model.Transaction, error)
+	GetAccountTransactions(customerId int, accountId int) ([]*model.Transaction, error)
+	CreateAccountTransaction(customerId int, fromAccountId int, newTransaction *model.NewTransaction) (*model.Transaction, error)
 }
 
 func New() Repository {
-	return &repository{}
+	return &repository{datastore: datastore.New()}
 }
 
 type repository struct {
+	datastore datastore.DataStore
 }
 
-func (r *repository) GetAccountTransactions(id int) ([]*model.Transaction, error) {
-	transactions, _ := getTransactions()
+func (r *repository) GetAccountTransactions(customerId int, accountId int) ([]*model.Transaction, error) {
+	// Check that the account exists for the customer
+	accounts := accounts.New()
+	account, err := accounts.GetCustomerAccount(customerId, accountId)
+	if err != nil {
+		return nil, err
+	}
+	if account == nil {
+		return nil, errors.New("Account Not Found")
+	}
+
+	transactions, err := r.datastore.GetTransactions()
+	if err != nil {
+		return nil, err
+	}
 	var accountTrans []*model.Transaction
 	for _, transaction := range transactions {
-		if transaction.FromAccount == id || transaction.ToAccount == id {
+		if transaction.FromAccount == accountId || transaction.ToAccount == accountId {
+			// If it's From this account then it should be a debit
+			if transaction.FromAccount == accountId {
+				transaction.Amount = 0 - transaction.Amount
+			}
 			accountTrans = append(accountTrans, transaction)
 		}
 	}
 	return accountTrans, nil
 }
 
-func (r *repository) CreateAccountTransaction(newTransaction *model.NewTransaction) (*model.Transaction, error) {
-	transactions, _ := getTransactions()
+func (r *repository) CreateAccountTransaction(customerId int, fromAccountId int, newTransaction *model.NewTransaction) (*model.Transaction, error) {
+	// Check that the from account exists for the customer
+	accounts := accounts.New()
+	fromAccount, err := accounts.GetCustomerAccount(customerId, fromAccountId)
+	if err != nil {
+		return nil, err
+	}
+	if fromAccount == nil {
+		return nil, errors.New("Account Not Found")
+	}
+
+	// Check that the ToAccount exists
+	toAccount, err := accounts.GetAccount(newTransaction.ToAccount)
+	if err != nil {
+		return nil, err
+	}
+	if toAccount == nil {
+		return nil, errors.New("To Account Not Found")
+	}
+
+	// From and To accounts must be different
+	if newTransaction.ToAccount == fromAccountId {
+		return nil, errors.New("Cannot Transfer To Same Account")
+	}
+
+	// Then we mimick creating a transaction but all it does is get the next transaction id and pass the data back to the user
+	transactions, err := r.datastore.GetTransactions()
+	if err != nil {
+		return nil, err
+	}
 	maxTransId := 0
 	for _, transaction := range transactions {
 		if transaction.ID > maxTransId {
@@ -43,19 +88,8 @@ func (r *repository) CreateAccountTransaction(newTransaction *model.NewTransacti
 	return &model.Transaction{
 		ID:          maxTransId + 1,
 		CreatedAt:   newTransaction.CreatedAt,
-		FromAccount: newTransaction.FromAccount,
+		FromAccount: fromAccountId,
 		ToAccount:   newTransaction.ToAccount,
 		Amount:      newTransaction.Amount,
 	}, nil
-}
-
-func getTransactions() ([]*model.Transaction, error) {
-	jsonFile, err := os.Open("./internal/data/transactions.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var data []*model.Transaction
-	json.Unmarshal(byteValue, &data)
-	return data, nil
 }

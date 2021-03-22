@@ -1,11 +1,7 @@
 package customers
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"os"
-
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/datastore"
 	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/model"
 )
 
@@ -15,34 +11,30 @@ type Repository interface {
 }
 
 func New() Repository {
-	return &repository{}
+	return &repository{datastore: datastore.New()}
 }
 
 type repository struct {
+	datastore datastore.DataStore
 }
 
 func (r *repository) GetCustomers() ([]*model.Customer, error) {
-	customers, _ := getCustomers()
+	customers, err := r.datastore.GetCustomers()
+	if err != nil {
+		return nil, err
+	}
 	return customers, nil
 }
 
 func (r *repository) GetCustomer(id int) (*model.Customer, error) {
-	customers, _ := getCustomers()
+	customers, err := r.datastore.GetCustomers()
+	if err != nil {
+		return nil, err
+	}
 	for _, customer := range customers {
 		if customer.ID == id {
 			return customer, nil
 		}
 	}
 	return nil, nil
-}
-
-func getCustomers() ([]*model.Customer, error) {
-	jsonFile, err := os.Open("./internal/data/customers.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var customerData []*model.Customer
-	json.Unmarshal(byteValue, &customerData)
-	return customerData, nil
 }
