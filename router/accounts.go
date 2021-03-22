@@ -7,11 +7,10 @@ import (
 	"strconv"
 
 	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/model"
-	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/accounts"
 	"github.com/gorilla/mux"
 )
 
-func getCustomerAccounts(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) GetCustomerAccounts(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Do some basic validation on the request parameters
 	id, err := strconv.Atoi(params["id"])
@@ -20,8 +19,7 @@ func getCustomerAccounts(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Account Id"))
 		return
 	}
-	repo := accounts.New()
-	data, _ := repo.GetCustomerAccounts(id)
+	data, _ := rtr.accounts.GetCustomerAccounts(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -34,7 +32,7 @@ func getCustomerAccounts(w http.ResponseWriter, r *http.Request) {
 	w.Write(d)
 }
 
-func getCustomerAccount(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) GetCustomerAccount(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Do some basic validation on the request parameters
 	customerid, err := strconv.Atoi(params["customerid"])
@@ -49,8 +47,8 @@ func getCustomerAccount(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Account Id"))
 		return
 	}
-	repo := accounts.New()
-	data, _ := repo.GetCustomerAccount(customerid, accountid)
+
+	data, err := rtr.accounts.GetCustomerAccount(customerid, accountid)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -64,7 +62,7 @@ func getCustomerAccount(w http.ResponseWriter, r *http.Request) {
 	w.Write(d)
 }
 
-func createCustomerAccount(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) CreateCustomerAccount(w http.ResponseWriter, r *http.Request) {
 	var newAccount *model.NewAccount
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -76,8 +74,7 @@ func createCustomerAccount(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	repo := accounts.New()
-	data, err := repo.CreateCustomerAccount(newAccount)
+	data, err := rtr.accounts.CreateCustomerAccount(newAccount)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

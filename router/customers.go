@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/customers"
 	"github.com/gorilla/mux"
 )
 
-func getCustomer(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) GetCustomer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Do some basic validation on the request parameters
 	id, err := strconv.Atoi(params["id"])
@@ -18,8 +17,7 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Customer Id"))
 		return
 	}
-	customerRepo := customers.New()
-	customer, err := customerRepo.GetCustomer(id)
+	customer, err := rtr.customers.GetCustomer(id)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -33,9 +31,8 @@ func getCustomer(w http.ResponseWriter, r *http.Request) {
 	w.Write(c)
 }
 
-func getCustomers(w http.ResponseWriter, r *http.Request) {
-	customerRepo := customers.New()
-	customer, _ := customerRepo.GetCustomers()
+func (rtr *router) GetCustomers(w http.ResponseWriter, r *http.Request) {
+	customer, _ := rtr.customers.GetCustomers()
 	c, _ := json.Marshal(customer)
 	w.Write(c)
 }

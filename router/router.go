@@ -3,6 +3,9 @@ package router
 import (
 	"net/http"
 
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/accounts"
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/customers"
+	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/transactions"
 	"github.com/gorilla/mux"
 )
 
@@ -13,49 +16,57 @@ type route struct {
 }
 
 func New() http.Handler {
-	rtr := mux.NewRouter()
-	routes := getRoutes()
+	gRtr := mux.NewRouter()
+
+	router := &router{customers: customers.New(), accounts: accounts.New(), transactions: transactions.New()}
+	routes := router.GetRoutes()
 	for _, route := range routes {
-		rtr.HandleFunc(route.pattern, route.handler).Methods(route.method)
+		gRtr.HandleFunc(route.pattern, route.handler).Methods(route.method)
 	}
-	return rtr
+	return gRtr
 }
 
-func getRoutes() []*route {
+type router struct {
+	customers    customers.Repository
+	accounts     accounts.Repository
+	transactions transactions.Repository
+}
+
+func (r *router) GetRoutes() []*route {
 	return []*route{
 		{
 			pattern: "/customers",
-			handler: getCustomers,
+			handler: r.GetCustomers,
 			method:  "GET",
 		},
 		{
 			pattern: "/customers/{id:[1-9]+}",
-			handler: getCustomer,
+			handler: r.GetCustomer,
 			method:  "GET",
 		},
 		{
 			pattern: "/customers/{id:[1-9]+}/accounts",
-			handler: getCustomerAccounts,
+			handler: r.GetCustomerAccounts,
 			method:  "GET",
 		},
 		{
 			pattern: "/customers/{customerid:[1-9]+}/accounts/{accountid:[1-9]+}",
-			handler: getCustomerAccount,
+			handler: r.GetCustomerAccount,
 			method:  "GET",
 		},
 		{
 			pattern: "/customers/{id:[1-9]+}/accounts",
-			handler: createCustomerAccount,
+			handler: r.CreateCustomerAccount,
 			method:  "POST",
 		},
 		{
 			pattern: "/customers/{customerid:[1-9]+}/accounts/{accountid:[1-9]+}/transactions",
-			handler: createAccountTransfer,
+			handler: r.CreateAccountTransfer,
 			method:  "POST",
 		},
 		{
 			pattern: "/customers/{customerid:[1-9]+}/accounts/{accountid:[1-9]+}/transactions",
-			handler: getAccountTransactions,
+			handler: r.GetAccountTransactions,
 			method:  "GET",
 		},
 	}

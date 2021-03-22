@@ -7,11 +7,10 @@ import (
 	"strconv"
 
 	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/model"
-	"git.codesubmit.io/terem-technologies/banking-api-wulhab/internal/repository/transactions"
 	"github.com/gorilla/mux"
 )
 
-func createAccountTransfer(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) CreateAccountTransfer(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Do some basic validation on the request parameters
 	customerId, err := strconv.Atoi(params["customerid"])
@@ -40,8 +39,7 @@ func createAccountTransfer(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Request Body"))
 		return
 	}
-	repo := transactions.New()
-	data, err := repo.CreateAccountTransaction(customerId, accountId, newTransaction)
+	data, err := rtr.transactions.CreateAccountTransaction(customerId, accountId, newTransaction)
 	if err != nil {
 		if err.Error() == "To Account Not Found" || err.Error() == "Account Not Found" || err.Error() == "Cannot Transfer To Same Account" {
 			w.WriteHeader(http.StatusBadRequest)
@@ -59,7 +57,7 @@ func createAccountTransfer(w http.ResponseWriter, r *http.Request) {
 	w.Write(d)
 }
 
-func getAccountTransactions(w http.ResponseWriter, r *http.Request) {
+func (rtr *router) GetAccountTransactions(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	// Do some validation on the request parameters
 	customerId, err := strconv.Atoi(params["customerid"])
@@ -74,8 +72,7 @@ func getAccountTransactions(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Invalid Account Id"))
 		return
 	}
-	repo := transactions.New()
-	data, err := repo.GetAccountTransactions(customerId, accountId)
+	data, err := rtr.transactions.GetAccountTransactions(customerId, accountId)
 	if err != nil {
 		if err.Error() == "Account Not Found" {
 			w.WriteHeader(http.StatusBadRequest)
