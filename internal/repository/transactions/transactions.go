@@ -14,17 +14,16 @@ type Repository interface {
 }
 
 func New() Repository {
-	return &repository{datastore: datastore.New()}
+	return &repository{datastore: datastore.New(), accounts: accounts.New()}
 }
 
 type repository struct {
 	datastore datastore.DataStore
+	accounts  accounts.Repository
 }
 
 func (r *repository) GetAccountTransactions(customerId int, accountId int) ([]*model.Transaction, error) {
-	// Check that the account exists for the customer
-	accounts := accounts.New()
-	account, err := accounts.GetCustomerAccount(customerId, accountId)
+	account, err := r.accounts.GetCustomerAccount(customerId, accountId)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +50,7 @@ func (r *repository) GetAccountTransactions(customerId int, accountId int) ([]*m
 
 func (r *repository) CreateAccountTransaction(customerId int, fromAccountId int, newTransaction *model.NewTransaction) (*model.Transaction, error) {
 	// Check that the from account exists for the customer
-	accounts := accounts.New()
-	fromAccount, err := accounts.GetCustomerAccount(customerId, fromAccountId)
+	fromAccount, err := r.accounts.GetCustomerAccount(customerId, fromAccountId)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +59,7 @@ func (r *repository) CreateAccountTransaction(customerId int, fromAccountId int,
 	}
 
 	// Check that the ToAccount exists
-	toAccount, err := accounts.GetAccount(newTransaction.ToAccount)
+	toAccount, err := r.accounts.GetAccount(newTransaction.ToAccount)
 	if err != nil {
 		return nil, err
 	}

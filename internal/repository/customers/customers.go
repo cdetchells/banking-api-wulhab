@@ -38,3 +38,5 @@ func (r *repository) GetCustomer(id int) (*model.Customer, error) {
 	}
 	return nil, nil
 }
+
+//go:generate mockgen -source=customers.go -package=customers -destination=./mocks/mock_customers.go -package=mocks
