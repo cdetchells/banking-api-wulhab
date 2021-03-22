@@ -21,15 +21,37 @@ func TestGetCustomerAccount(t *testing.T) {
 		name           string
 		repoErr        error
 		repoRes        *model.Account
+		repoCall       bool
 		wantStatusCode int
 		wantBody       string
 	}{
+		{
+			customerid:     "",
+			id:             "1",
+			name:           "Test Invalid Customer Id",
+			repoErr:        errors.New("Error"),
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Customer Id",
+		},
+		{
+			customerid:     "1",
+			id:             "",
+			name:           "Test Invalid Account Id",
+			repoErr:        errors.New("Error"),
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Account Id",
+		},
 		{
 			customerid:     "1",
 			id:             "1",
 			name:           "Test that error returned when datastore returns error",
 			repoErr:        errors.New("Error"),
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 500,
 			wantBody:       "",
 		},
@@ -39,6 +61,7 @@ func TestGetCustomerAccount(t *testing.T) {
 			name:           "Test that error returned when datastore returns error",
 			repoErr:        nil,
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 404,
 			wantBody:       "Account Not Found",
 		},
@@ -53,6 +76,7 @@ func TestGetCustomerAccount(t *testing.T) {
 				Type:     1,
 				Balance:  1,
 			},
+			repoCall:       true,
 			wantStatusCode: 200,
 			wantBody:       `{"id":1,"customer":1,"type":1,"balance":1}`,
 		},
@@ -71,7 +95,9 @@ func TestGetCustomerAccount(t *testing.T) {
 			rr := httptest.NewRecorder()
 
 			accountRepo := accountmocks.NewMockRepository(mockCtrl)
-			accountRepo.EXPECT().GetCustomerAccount(gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			if tt.repoCall {
+				accountRepo.EXPECT().GetCustomerAccount(gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			}
 
 			router := &router{accounts: accountRepo}
 			router.GetCustomerAccount(rr, request)
@@ -94,14 +120,25 @@ func TestGetCustomerAccounts(t *testing.T) {
 		name           string
 		repoErr        error
 		repoRes        []*model.Account
+		repoCall       bool
 		wantStatusCode int
 		wantBody       string
 	}{
+		{
+			customerid:     "",
+			name:           "Test Invalid Account Id",
+			repoErr:        errors.New("Error"),
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Account Id",
+		},
 		{
 			customerid:     "1",
 			name:           "Test that error returned when repository returns error",
 			repoErr:        errors.New("Error"),
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 500,
 			wantBody:       "",
 		},
@@ -110,6 +147,7 @@ func TestGetCustomerAccounts(t *testing.T) {
 			name:           "Test Not Found error when repository returns nil",
 			repoErr:        nil,
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 404,
 			wantBody:       "",
 		},
@@ -125,6 +163,7 @@ func TestGetCustomerAccounts(t *testing.T) {
 					Balance:  1,
 				},
 			},
+			repoCall:       true,
 			wantStatusCode: 200,
 			wantBody:       `[{"id":1,"customer":1,"type":1,"balance":1}]`,
 		},
@@ -141,7 +180,9 @@ func TestGetCustomerAccounts(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 			accountRepo := accountmocks.NewMockRepository(mockCtrl)
-			accountRepo.EXPECT().GetCustomerAccounts(gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			if tt.repoCall {
+				accountRepo.EXPECT().GetCustomerAccounts(gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			}
 
 			router := &router{accounts: accountRepo}
 			router.GetCustomerAccounts(rr, request)

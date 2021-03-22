@@ -23,15 +23,47 @@ func TestGetAccountTransactions(t *testing.T) {
 		name           string
 		repoErr        error
 		repoRes        []*model.Transaction
+		repoCall       bool
 		wantStatusCode int
 		wantBody       string
 	}{
+		{
+			customerid:     "",
+			id:             "1",
+			name:           "Test Invalid Customer Id",
+			repoErr:        nil,
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Customer Id",
+		},
+		{
+			customerid:     "1",
+			id:             "",
+			name:           "Test Invalid Account Id",
+			repoErr:        nil,
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Account Id",
+		},
+		{
+			customerid:     "1",
+			id:             "1",
+			name:           "Test Account Not Found",
+			repoErr:        errors.New("Account Not Found"),
+			repoRes:        nil,
+			repoCall:       true,
+			wantStatusCode: 400,
+			wantBody:       "Account Not Found",
+		},
 		{
 			customerid:     "1",
 			id:             "1",
 			name:           "Test that error returned when repository returns error",
 			repoErr:        errors.New("Error"),
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 500,
 			wantBody:       "",
 		},
@@ -41,6 +73,7 @@ func TestGetAccountTransactions(t *testing.T) {
 			name:           "Test Not Found error when repository returns nil",
 			repoErr:        nil,
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 200,
 			wantBody:       "null",
 		},
@@ -58,6 +91,7 @@ func TestGetAccountTransactions(t *testing.T) {
 					Amount:      1,
 				},
 			},
+			repoCall:       true,
 			wantStatusCode: 200,
 			wantBody:       `[{"id":1,"createdAt":"2012-10-10T01:02:03.000000004+01:00","fromAccount":1,"toAccount":1,"amount":1}]`,
 		},
@@ -75,7 +109,9 @@ func TestGetAccountTransactions(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 			transactionRepo := transactionmocks.NewMockRepository(mockCtrl)
-			transactionRepo.EXPECT().GetAccountTransactions(gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			if tt.repoCall {
+				transactionRepo.EXPECT().GetAccountTransactions(gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			}
 
 			router := &router{transactions: transactionRepo}
 			router.GetAccountTransactions(rr, request)
@@ -104,6 +140,36 @@ func TestCreateAccountTransfer(t *testing.T) {
 		wantBody       string
 		reqBody        string
 	}{
+		{
+			customerid:     "",
+			id:             "1",
+			name:           "Test that error returned when repository returns error",
+			repoErr:        nil,
+			repoRes:        nil,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Customer Id",
+			reqBody:        "",
+		},
+		{
+			customerid:     "1",
+			id:             "",
+			name:           "Test that error returned when repository returns error",
+			repoErr:        nil,
+			repoRes:        nil,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Account Id",
+			reqBody:        "",
+		},
+		{
+			customerid:     "1",
+			id:             "1",
+			name:           "Test that error returned when repository returns error",
+			repoErr:        nil,
+			repoRes:        nil,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Request Body",
+			reqBody:        "",
+		},
 		{
 			customerid:     "1",
 			id:             "1",
@@ -155,7 +221,9 @@ func TestCreateAccountTransfer(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 		transactionRepo := transactionmocks.NewMockRepository(mockCtrl)
-		transactionRepo.EXPECT().CreateAccountTransaction(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+		if tt.reqBody != "" {
+			transactionRepo.EXPECT().CreateAccountTransaction(gomock.Any(), gomock.Any(), gomock.Any()).Return(tt.repoRes, tt.repoErr)
+		}
 
 		router := &router{transactions: transactionRepo}
 		router.CreateAccountTransfer(rr, request)

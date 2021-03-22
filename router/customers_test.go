@@ -19,16 +19,36 @@ func TestGetCustomer(t *testing.T) {
 		name           string
 		repoErr        error
 		repoRes        *model.Customer
+		repoCall       bool
 		wantStatusCode int
 		wantBody       string
 	}{
+		{
+			id:             "",
+			name:           "Test Invalid Customer Id",
+			repoErr:        errors.New("Error"),
+			repoRes:        nil,
+			repoCall:       false,
+			wantStatusCode: 400,
+			wantBody:       "Invalid Customer Id",
+		},
 		{
 			id:             "1",
 			name:           "Test that error returned when repository returns error",
 			repoErr:        errors.New("Error"),
 			repoRes:        nil,
+			repoCall:       true,
 			wantStatusCode: 500,
 			wantBody:       "",
+		},
+		{
+			id:             "1",
+			name:           "Test that error returned when repository returns error",
+			repoErr:        nil,
+			repoRes:        nil,
+			repoCall:       true,
+			wantStatusCode: 404,
+			wantBody:       "Customer Not Found",
 		},
 		{
 			id:      "1",
@@ -38,6 +58,7 @@ func TestGetCustomer(t *testing.T) {
 				ID:   1,
 				Name: "Test",
 			},
+			repoCall:       true,
 			wantStatusCode: 200,
 			wantBody:       `{"id":1,"name":"Test"}`,
 		},
@@ -48,7 +69,9 @@ func TestGetCustomer(t *testing.T) {
 			defer mockCtrl.Finish()
 
 			customerRepo := customermocks.NewMockRepository(mockCtrl)
-			customerRepo.EXPECT().GetCustomer(gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			if tt.repoCall {
+				customerRepo.EXPECT().GetCustomer(gomock.Any()).Return(tt.repoRes, tt.repoErr)
+			}
 
 			request, _ := http.NewRequest(http.MethodGet, "customers/1", nil)
 			request = mux.SetURLVars(request, map[string]string{
